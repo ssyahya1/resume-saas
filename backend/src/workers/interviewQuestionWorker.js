@@ -1,3 +1,4 @@
+
 import { Worker, UnrecoverableError } from "bullmq";
 
 import {
@@ -19,6 +20,7 @@ import {
 import {
   isRetryableError,
 } from "../utils/jobErrors.js";
+
 import { logger } from "../utils/logger.js";
 
 const connection = {
@@ -31,7 +33,9 @@ const interviewQuestionWorker =
   new Worker(
     "interview-question",
     async (job) => {
-      logger.info("Processing interview question job", { jobId: job.id });
+      logger.info("Processing interview question job", {
+        jobId: job.id,
+      });
 
       const {
         userId,
@@ -51,9 +55,23 @@ const interviewQuestionWorker =
 
         return result;
       } catch (error) {
+        logger.error(
+          "Interview question generation error",
+          {
+            jobId: job.id,
+            errorName: error?.name,
+            errorCode: error?.code,
+            errorStatus: error?.status,
+            errorStatusCode: error?.statusCode,
+            errorMessage: error?.message,
+            errorStack: error?.stack,
+          }
+        );
+
         if (!isRetryableError(error)) {
           throw new UnrecoverableError(
-            error.message
+            error?.message ||
+              "Interview question generation failed"
           );
         }
 
@@ -73,7 +91,12 @@ const interviewQuestionWorker =
 interviewQuestionWorker.on(
   "completed",
   async (job) => {
-    logger.info("Interview question job completed", { jobId: job.id });
+    logger.info(
+      "Interview question job completed",
+      {
+        jobId: job.id,
+      }
+    );
 
     const {
       userId,
@@ -88,11 +111,14 @@ interviewQuestionWorker.on(
           status: "completed",
         });
       } catch (error) {
-        logger.error("Failed to update interview question idempotency record", {
-          jobId: job.id,
-          errorName: error?.name,
-          errorCode: error?.code,
-        });
+        logger.error(
+          "Failed to update interview question idempotency record",
+          {
+            jobId: job.id,
+            errorName: error?.name,
+            errorCode: error?.code,
+          }
+        );
       }
     }
 
@@ -109,11 +135,18 @@ interviewQuestionWorker.on(
 interviewQuestionWorker.on(
   "failed",
   async (job, error) => {
-    logger.error("Interview question job failed", {
-      jobId: job?.id,
-      errorName: error?.name,
-      errorCode: error?.code,
-    });
+    logger.error(
+      "Interview question job failed",
+      {
+        jobId: job?.id,
+        errorName: error?.name,
+        errorCode: error?.code,
+        errorStatus: error?.status,
+        errorStatusCode: error?.statusCode,
+        errorMessage: error?.message,
+        errorStack: error?.stack,
+      }
+    );
 
     if (!job) {
       return;
@@ -139,11 +172,14 @@ interviewQuestionWorker.on(
             status: "failed",
           });
         } catch (updateError) {
-          logger.error("Failed to update interview question idempotency record", {
-            jobId: job.id,
-            errorName: updateError?.name,
-            errorCode: updateError?.code,
-          });
+          logger.error(
+            "Failed to update interview question idempotency record",
+            {
+              jobId: job.id,
+              errorName: updateError?.name,
+              errorCode: updateError?.code,
+            }
+          );
         }
       }
 
@@ -152,12 +188,15 @@ interviewQuestionWorker.on(
           userId
         );
       } catch (releaseError) {
-        logger.error("Failed to release interview question usage", {
-          jobId: job.id,
-          userId,
-          errorName: releaseError?.name,
-          errorCode: releaseError?.code,
-        });
+        logger.error(
+          "Failed to release interview question usage",
+          {
+            jobId: job.id,
+            userId,
+            errorName: releaseError?.name,
+            errorCode: releaseError?.code,
+          }
+        );
       }
 
       sendToUser(userId, {
@@ -169,6 +208,7 @@ interviewQuestionWorker.on(
         message:
           "Interview question generation failed due to a permanent error",
       });
+
       return;
     }
 
@@ -182,6 +222,7 @@ interviewQuestionWorker.on(
         message:
           "Interview question generation failed. Retrying...",
       });
+
       return;
     }
 
@@ -193,11 +234,14 @@ interviewQuestionWorker.on(
           status: "failed",
         });
       } catch (updateError) {
-        logger.error("Failed to update interview question idempotency record", {
-          jobId: job.id,
-          errorName: updateError?.name,
-          errorCode: updateError?.code,
-        });
+        logger.error(
+          "Failed to update interview question idempotency record",
+          {
+            jobId: job.id,
+            errorName: updateError?.name,
+            errorCode: updateError?.code,
+          }
+        );
       }
     }
 
@@ -206,12 +250,15 @@ interviewQuestionWorker.on(
         userId
       );
     } catch (releaseError) {
-      logger.error("Failed to release interview question usage", {
-        jobId: job.id,
-        userId,
-        errorName: releaseError?.name,
-        errorCode: releaseError?.code,
-      });
+      logger.error(
+        "Failed to release interview question usage",
+        {
+          jobId: job.id,
+          userId,
+          errorName: releaseError?.name,
+          errorCode: releaseError?.code,
+        }
+      );
     }
 
     sendToUser(userId, {
