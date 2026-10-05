@@ -1,3 +1,4 @@
+
 import ai from "../config/gemini.js";
 import { aiAnalysisSchema } from "../schemas/aiAnalysisSchema.js";
 
@@ -12,7 +13,8 @@ export const generateStructuredContentWithGemini = async ({
   invalidJsonMessage = "AI returned invalid JSON",
   invalidStructureMessage = "AI returned invalid response structure",
   onValidationFailure,
-}) => {  let response;
+}) => {
+  let response;
 
   try {
     response = await ai.models.generateContent({
@@ -38,14 +40,25 @@ export const generateStructuredContentWithGemini = async ({
 
   try {
     parsed = JSON.parse(response.text.trim());
-  } catch {
+  } catch (error) {
+    console.error("Gemini JSON parse error", {
+      name: error?.name,
+      message: error?.message,
+    });
+
     throw new Error(invalidJsonMessage);
   }
 
   const validationResult = schema.safeParse(parsed);
 
   if (!validationResult.success) {
+    console.error("Gemini schema validation error", {
+      message: invalidStructureMessage,
+      issues: validationResult.error.issues,
+    });
+
     onValidationFailure?.(validationResult.error);
+
     throw new Error(invalidStructureMessage);
   }
 
