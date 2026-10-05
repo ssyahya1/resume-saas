@@ -12,14 +12,27 @@ export const generateStructuredContentWithGemini = async ({
   invalidJsonMessage = "AI returned invalid JSON",
   invalidStructureMessage = "AI returned invalid response structure",
   onValidationFailure,
-}) => {
-  const response = await ai.models.generateContent({
-    model: "gemini-3.6-flash",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-    },
-  });
+}) => {  let response;
+
+  try {
+    response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("Gemini API error", {
+      name: error?.name,
+      status: error?.status,
+      statusCode: error?.statusCode,
+      code: error?.code,
+      message: error?.message,
+    });
+
+    throw error;
+  }
 
   let parsed;
 
