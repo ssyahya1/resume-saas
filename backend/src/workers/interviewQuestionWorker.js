@@ -171,7 +171,6 @@ interviewQuestionWorker.on(
       });
       return;
     }
-    }
 
     if (job.attemptsMade < maxAttempts) {
       sendToUser(userId, {
@@ -184,7 +183,6 @@ interviewQuestionWorker.on(
           "Interview question generation failed. Retrying...",
       });
       return;
-    }
     }
 
     if (idempotencyRecordId) {
