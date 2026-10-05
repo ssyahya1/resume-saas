@@ -1,0 +1,39 @@
+{
+  "name": "saas",
+  "version": "1.0.0",
+  "description": "Backend API for AI Resume & Job Application SaaS",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest",
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "^2.23.0",
+    "@supabase/supabase-js": "^2.116.0",
+    "bullmq": "^6.3.10",
+    "cookie": "^2.0.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.1",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "ioredis": "^6.0.0",
+    "mammoth": "^1.12.3",
+    "morgan": "^1.12.1",
+    "multer": "^2.4.0",
+    "pdf-parse": "^2.4.5",
+    "redis": "^6.2.1",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "supertest": "^7.3.0",
+    "vitest": "^5.0.1"
+  }
+}
