@@ -132,7 +132,7 @@ ${formatUntrustedPromptInput(job.description)}
 </job_description>
 `;
 
-  const coverLetter = await generateStructuredContentWithGemini({
+  const coverLetter = await generateStructuredContentWithAI({
     prompt,
     schema: coverLetterSchema,
     invalidStructureMessage: "AI returned invalid Cover Letter structure",
