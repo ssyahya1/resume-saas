@@ -1,5 +1,9 @@
-import ai from "../config/gemini.js";
+import Groq from "groq-sdk";
 import { aiAnalysisSchema } from "../schemas/aiAnalysisSchema.js";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 export const formatUntrustedPromptInput = (value) =>
   JSON.stringify(value)
@@ -18,11 +22,16 @@ export const generateStructuredContentWithGemini = async ({
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
+      response = await groq.chat.completions.create({
+        model: "openai/gpt-oss-120b",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        response_format: {
+          type: "json_object",
         },
       });
 
@@ -39,10 +48,9 @@ export const generateStructuredContentWithGemini = async ({
         status === 504 ||
         message.includes("rate limit") ||
         message.includes("temporarily unavailable") ||
-        message.includes("high demand") ||
         message.includes("service unavailable");
 
-      console.error("Gemini API error", {
+      console.error("Groq API error", {
         name: error?.name,
         status: error?.status,
         statusCode: error?.statusCode,
@@ -59,7 +67,7 @@ export const generateStructuredContentWithGemini = async ({
 
       const delayMs = 2000 * 2 ** (attempt - 1);
 
-      console.log("Retrying Gemini request", {
+      console.log("Retrying Groq request", {
         attempt: attempt + 1,
         maxAttempts,
         delayMs,
@@ -70,15 +78,21 @@ export const generateStructuredContentWithGemini = async ({
   }
 
   if (!response) {
-    throw new Error("Gemini did not return a response");
+    throw new Error("Groq did not return a response");
+  }
+
+  const text = response.choices?.[0]?.message?.content?.trim();
+
+  if (!text) {
+    throw new Error("Groq returned an empty response");
   }
 
   let parsed;
 
   try {
-    parsed = JSON.parse(response.text.trim());
+    parsed = JSON.parse(text);
   } catch (error) {
-    console.error("Gemini JSON parse error", {
+    console.error("Groq JSON parse error", {
       name: error?.name,
       message: error?.message,
     });
@@ -89,7 +103,7 @@ export const generateStructuredContentWithGemini = async ({
   const validationResult = schema.safeParse(parsed);
 
   if (!validationResult.success) {
-    console.error("Gemini schema validation error", {
+    console.error("Groq schema validation error", {
       message: invalidStructureMessage,
       issues: validationResult.error.issues,
     });

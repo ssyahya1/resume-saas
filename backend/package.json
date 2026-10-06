@@ -13,7 +13,6 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@google/genai": "^2.23.0",
     "@supabase/supabase-js": "^2.116.0",
     "bullmq": "^6.3.10",
     "cookie": "^2.0.1",
@@ -21,6 +20,7 @@
     "cors": "^2.8.6",
     "dotenv": "^18.0.1",
     "express": "^5.2.1",
+    "groq-sdk": "^1.6.0",
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
     "mammoth": "^1.12.3",
