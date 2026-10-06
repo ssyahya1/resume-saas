@@ -6,7 +6,6 @@ import {
 import {
   formatUntrustedPromptInput,
   generateStructuredContentWithAI,
-  generateStructuredContentWithAI,
 } from "./aiService.js";
 
 import {
