@@ -1,4 +1,3 @@
-
 import ai from "../config/gemini.js";
 import { aiAnalysisSchema } from "../schemas/aiAnalysisSchema.js";
 
@@ -14,26 +13,64 @@ export const generateStructuredContentWithGemini = async ({
   invalidStructureMessage = "AI returned invalid response structure",
   onValidationFailure,
 }) => {
+  const maxAttempts = 3;
   let response;
 
-  try {
-    response = await ai.models.generateContent({
-      model: "gemini-3.6-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-      },
-    });
-  } catch (error) {
-    console.error("Gemini API error", {
-      name: error?.name,
-      status: error?.status,
-      statusCode: error?.statusCode,
-      code: error?.code,
-      message: error?.message,
-    });
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      response = await ai.models.generateContent({
+        model: "gemini-3.6-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
 
-    throw error;
+      break;
+    } catch (error) {
+      const status = error?.status || error?.statusCode;
+      const message = error?.message?.toLowerCase() || "";
+
+      const isRetryable =
+        status === 429 ||
+        status === 500 ||
+        status === 502 ||
+        status === 503 ||
+        status === 504 ||
+        message.includes("rate limit") ||
+        message.includes("temporarily unavailable") ||
+        message.includes("high demand") ||
+        message.includes("service unavailable");
+
+      console.error("Gemini API error", {
+        name: error?.name,
+        status: error?.status,
+        statusCode: error?.statusCode,
+        code: error?.code,
+        message: error?.message,
+        attempt,
+        maxAttempts,
+        retryable: isRetryable,
+      });
+
+      if (!isRetryable || attempt === maxAttempts) {
+        throw error;
+      }
+
+      const delayMs = 2000 * 2 ** (attempt - 1);
+
+      console.log("Retrying Gemini request", {
+        attempt: attempt + 1,
+        maxAttempts,
+        delayMs,
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  if (!response) {
+    throw new Error("Gemini did not return a response");
   }
 
   let parsed;
