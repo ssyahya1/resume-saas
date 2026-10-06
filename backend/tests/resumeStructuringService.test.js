@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../src/services/aiService.js", () => ({
   generateStructuredContentWithAI: vi.fn(),
+  formatUntrustedPromptInput: vi.fn((value) => value),
 }));
 
 vi.mock("../src/repositories/resumeRepository.js", () => ({

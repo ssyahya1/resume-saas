@@ -50,4 +50,5 @@ jobs:
           SUPABASE_URL: https://example.supabase.co
           SUPABASE_PUBLISHABLE_KEY: test-publishable-key
           SUPABASE_SECRET_KEY: test-secret-key
+          GROQ_API_KEY: test-groq-key
           REDIS_URL: redis://localhost:6379
