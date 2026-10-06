@@ -1,11 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../src/config/gemini.js", () => ({
-  default: {
-    models: {
-      generateContent: vi.fn(),
-    },
-  },
+vi.mock("../src/services/aiService.js", () => ({
+  generateStructuredContentWithAI: vi.fn(),
 }));
 
 vi.mock("../src/repositories/resumeRepository.js", () => ({
@@ -17,7 +13,7 @@ vi.mock("../src/repositories/resumeVersionRepository.js", () => ({
   updateResumeVersionContent: vi.fn(),
 }));
 
-import ai from "../src/config/gemini.js";
+import { generateStructuredContentWithAI } from "../src/services/aiService.js";
 
 import { getResumeById } from "../src/repositories/resumeRepository.js";
 
@@ -44,7 +40,7 @@ describe("Resume Structuring Service", () => {
       }),
     ).rejects.toThrow("Resume not found");
 
-    expect(ai.models.generateContent).not.toHaveBeenCalled();
+    expect(generateStructuredContentWithAI).not.toHaveBeenCalled();
   });
 
   it("should reject when resume raw text is missing", async () => {
@@ -67,7 +63,7 @@ describe("Resume Structuring Service", () => {
       }),
     ).rejects.toThrow("Resume raw text is missing");
 
-    expect(ai.models.generateContent).not.toHaveBeenCalled();
+    expect(generateStructuredContentWithAI).not.toHaveBeenCalled();
   });
 
   it("should structure a valid resume", async () => {
@@ -84,22 +80,20 @@ describe("Resume Structuring Service", () => {
       },
     });
 
-    ai.models.generateContent.mockResolvedValue({
-      text: JSON.stringify({
-        personalInfo: {
-          name: "John Doe",
-          email: "john@example.com",
-          phone: "123456789",
-          location: "Karachi",
-          links: [],
-        },
-        summary: "Software Engineer",
-        skills: ["JavaScript", "Node.js"],
-        experience: [],
-        projects: [],
-        education: [],
-        certifications: [],
-      }),
+    generateStructuredContentWithAI.mockResolvedValue({
+      personalInfo: {
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "123456789",
+        location: "Karachi",
+        links: [],
+      },
+      summary: "Software Engineer",
+      skills: ["JavaScript", "Node.js"],
+      experience: [],
+      projects: [],
+      education: [],
+      certifications: [],
     });
 
     updateResumeVersionContent.mockResolvedValue({
@@ -124,6 +118,7 @@ describe("Resume Structuring Service", () => {
         },
       },
     });
+
     let result;
 
     try {
@@ -137,7 +132,7 @@ describe("Resume Structuring Service", () => {
       throw error;
     }
 
-    expect(ai.models.generateContent).toHaveBeenCalledTimes(1);
+    expect(generateStructuredContentWithAI).toHaveBeenCalledTimes(1);
 
     expect(updateResumeVersionContent).toHaveBeenCalledTimes(1);
 

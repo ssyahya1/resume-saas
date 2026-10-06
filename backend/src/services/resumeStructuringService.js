@@ -1,8 +1,8 @@
 import { resumeSchema } from "../schemas/resumeSchema.js";
 import {
   formatUntrustedPromptInput,
-  generateStructuredContentWithGemini,
-} from "./geminiService.js";
+  generateStructuredContentWithAI,
+} from "./aiService.js";
 
 import {
   getResumeVersionById,
@@ -13,7 +13,7 @@ import { getResumeById } from "../repositories/resumeRepository.js";
 import AppError from "../utils/appError.js";
 import { logger } from "../utils/logger.js";
 
-const createGeminiError = (error) => {
+const createAIError = (error) => {
   const newError = new Error(
     error.status === 429
       ? "AI service rate limit reached. Please try again later."
@@ -126,7 +126,7 @@ ${formatUntrustedPromptInput(rawText)}
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      structuredData = await generateStructuredContentWithGemini({
+      structuredData = await generateStructuredContentWithAI({
         prompt,
         schema: resumeSchema,
         invalidStructureMessage: "AI returned invalid resume structure",
@@ -144,7 +144,7 @@ ${formatUntrustedPromptInput(rawText)}
       }
 
       if (attempt === maxAttempts) {
-        throw createGeminiError(error);
+        throw createAIError(error);
       }
 
       if (error.status === 429) {

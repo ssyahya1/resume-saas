@@ -3,8 +3,8 @@ import crypto from "crypto";
 import { tailoredResumeSchema } from "../schemas/tailoredResumeSchema.js";
 import {
   formatUntrustedPromptInput,
-  generateStructuredContentWithGemini,
-} from "./geminiService.js";
+  generateStructuredContentWithAI,
+} from "./aiService.js";
 
 import {
   reserveUserResumeTailoring,
@@ -152,7 +152,7 @@ ${formatUntrustedPromptInput(job.description)}
 </job_description>
 `;
 
-  const tailoredData = await generateStructuredContentWithGemini({
+  const tailoredData = await generateStructuredContentWithAI({
     prompt,
     schema: tailoredResumeSchema,
     invalidStructureMessage: "AI returned invalid tailored resume structure",

@@ -19,7 +19,7 @@ import {
   releaseUserAIAnalysis,
 } from "./usageService.js";
 
-import { analyzeResumeWithGemini } from "./geminiService.js";
+import { analyzeResumeWithAI } from "./aiService.js";
 
 import {
   getIdempotencyKey,
@@ -90,7 +90,7 @@ export const createUserAIAnalysis = async ({
     return JSON.parse(cachedAnalysis);
   }
 
-  const aiResult = await analyzeResumeWithGemini({
+  const aiResult = await analyzeResumeWithAI({
     resumeContent: resumeVersion.content,
     jobDescription: job.description,
   });

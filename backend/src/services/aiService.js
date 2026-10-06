@@ -10,7 +10,7 @@ export const formatUntrustedPromptInput = (value) =>
     .replace(/</g, "\\u003c")
     .replace(/>/g, "\\u003e");
 
-export const generateStructuredContentWithGemini = async ({
+export const generateStructuredContentWithAI = async ({
   prompt,
   schema,
   invalidJsonMessage = "AI returned invalid JSON",
@@ -116,7 +116,7 @@ export const generateStructuredContentWithGemini = async ({
   return validationResult.data;
 };
 
-export const analyzeResumeWithGemini = async ({
+export const analyzeResumeWithAI = async ({
   resumeContent,
   jobDescription,
 }) => {
@@ -155,7 +155,7 @@ Rules:
 - Do not include code fences.
 `;
 
-  return generateStructuredContentWithGemini({
+  return generateStructuredContentWithAI({
     prompt,
     schema: aiAnalysisSchema,
     invalidStructureMessage: "AI returned invalid analysis structure",

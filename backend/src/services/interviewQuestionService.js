@@ -5,8 +5,9 @@ import {
 } from "../schemas/interviewQuestionSchema.js";
 import {
   formatUntrustedPromptInput,
-  generateStructuredContentWithGemini,
-} from "./geminiService.js";
+  generateStructuredContentWithAI,
+  generateStructuredContentWithAI,
+} from "./aiService.js";
 
 import {
   getApplicationById,
@@ -155,7 +156,7 @@ ${formatUntrustedPromptInput(job.description)}
 </job_description>
 `;
 
-  const result = await generateStructuredContentWithGemini({
+  const result = await generateStructuredContentWithAI({
     prompt,
     schema: interviewQuestionsSchema,
     invalidStructureMessage: "AI returned invalid interview question structure",

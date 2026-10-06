@@ -3,8 +3,8 @@ import crypto from "crypto";
 import { coverLetterSchema } from "../schemas/coverLetterSchema.js";
 import {
   formatUntrustedPromptInput,
-  generateStructuredContentWithGemini,
-} from "./geminiService.js";
+  generateStructuredContentWithAI,
+} from "./aiService.js";
 
 import { getApplicationById } from "../repositories/applicationRepository.js";
 import { getResumeById } from "../repositories/resumeRepository.js";
