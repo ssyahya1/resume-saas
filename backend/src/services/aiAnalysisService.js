@@ -3,6 +3,7 @@ import crypto from "crypto";
 import {
   createAIAnalysis,
   getAIAnalysesByUserId,
+  getAIAnalysisSummaryByUserId,
   getAIAnalysisById,
 } from "../repositories/aiAnalysisRepository.js";
 
@@ -117,6 +118,10 @@ export const createUserAIAnalysis = async ({
 
 export const getUserAIAnalyses = async (userId) => {
   return getAIAnalysesByUserId(userId);
+};
+
+export const getUserAIAnalysisSummary = async (userId) => {
+  return getAIAnalysisSummaryByUserId(userId);
 };
 
 export const getUserAIAnalysisById = async ({

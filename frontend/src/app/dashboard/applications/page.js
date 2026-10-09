@@ -5,9 +5,8 @@ import Link from "next/link";
 import {
   createApplication,
   deleteApplication,
+  getWorkspaceOptions,
   listApplications,
-  listJobs,
-  listResumes,
 } from "@/lib/resources";
 import { APPLICATION_STATUSES, formatDate, titleCase } from "@/lib/format";
 import {
@@ -45,16 +44,18 @@ export default function ApplicationsPage() {
 
   const loadApplications = useCallback(async () => {
     try {
-      const [applicationResponse, jobResponse, resumeResponse] = await Promise.all([
+      const [applicationResponse, workspaceOptions] = await Promise.all([
         listApplications({ page, limit: PAGE_SIZE, status: statusFilter }),
-        listJobs({ page: 1, limit: 100 }),
-        listResumes({ page: 1, limit: 100 }),
+        getWorkspaceOptions(),
       ]);
+      if (workspaceOptions.unavailable?.some((resource) => ["jobs", "resumes"].includes(resource))) {
+        throw new Error("Some job or resume options are unavailable. Please try again.");
+      }
       if (!Array.isArray(applicationResponse.applications)) throw new Error("The server returned an unexpected application list.");
       setApplications(applicationResponse.applications);
       setPagination(applicationResponse.pagination || { page, totalPages: 1 });
-      setJobs(Array.isArray(jobResponse.jobs) ? jobResponse.jobs : []);
-      setResumes(Array.isArray(resumeResponse.resumes) ? resumeResponse.resumes : []);
+      setJobs(Array.isArray(workspaceOptions.jobs) ? workspaceOptions.jobs : []);
+      setResumes(Array.isArray(workspaceOptions.resumes) ? workspaceOptions.resumes : []);
       setError("");
     } catch (requestError) {
       setError(requestError.message || "Applications couldn’t be loaded. Please try again.");
@@ -67,17 +68,19 @@ export default function ApplicationsPage() {
     let active = true;
     const load = async () => {
       try {
-        const [applicationResponse, jobResponse, resumeResponse] = await Promise.all([
+        const [applicationResponse, workspaceOptions] = await Promise.all([
           listApplications({ page, limit: PAGE_SIZE, status: statusFilter }),
-          listJobs({ page: 1, limit: 100 }),
-          listResumes({ page: 1, limit: 100 }),
+          getWorkspaceOptions(),
         ]);
         if (!active) return;
+        if (workspaceOptions.unavailable?.some((resource) => ["jobs", "resumes"].includes(resource))) {
+          throw new Error("Some job or resume options are unavailable. Please try again.");
+        }
         if (!Array.isArray(applicationResponse.applications)) throw new Error("The server returned an unexpected application list.");
         setApplications(applicationResponse.applications);
         setPagination(applicationResponse.pagination || { page, totalPages: 1 });
-        setJobs(Array.isArray(jobResponse.jobs) ? jobResponse.jobs : []);
-        setResumes(Array.isArray(resumeResponse.resumes) ? resumeResponse.resumes : []);
+        setJobs(Array.isArray(workspaceOptions.jobs) ? workspaceOptions.jobs : []);
+        setResumes(Array.isArray(workspaceOptions.resumes) ? workspaceOptions.resumes : []);
         setError("");
       } catch (requestError) {
         if (active) setError(requestError.message || "Applications couldn’t be loaded. Please try again.");

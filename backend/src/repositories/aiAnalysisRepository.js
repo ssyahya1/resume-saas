@@ -43,6 +43,28 @@ export const getAIAnalysesByUserId = async (userId) => {
   return data;
 };
 
+export const getAIAnalysisSummaryByUserId = async (userId) => {
+  const { data, count, error } = await supabaseAdmin
+    .from("ai_analyses")
+    .select("id, match_score, created_at", { count: "exact" })
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    throw error;
+  }
+
+  if (count === null) {
+    throw new Error("Could not determine the AI analysis total");
+  }
+
+  return {
+    analyses: data,
+    total: count,
+  };
+};
+
 export const getAIAnalysisById = async ({
   analysisId,
   userId,

@@ -29,6 +29,7 @@ import resumeStructuringRoute from "./routes/resumeStructuringRoute.js";
 import resumeTailoringRoute from "./routes/resumeTailoringRoute.js";
 import coverLetterRoute from "./routes/coverLetterRoute.js";
 import interviewQuestionRoute from "./routes/interviewQuestionRoute.js";
+import workspaceOptionsRoute from "./routes/workspaceOptionsRoute.js";
 
 import { createSupabaseAuthClient } from "./config/supabaseAuth.js";
 
@@ -72,6 +73,7 @@ app.use(
       return callback(error);
     },
     credentials: true,
+    maxAge: 600,
   })
 );
 
@@ -172,6 +174,8 @@ app.use(
   "/api/interview-questions",
   interviewQuestionRoute
 );
+
+app.use("/api/workspace/options", workspaceOptionsRoute);
 
 
 // -------------------------

@@ -31,13 +31,16 @@ const parseResponse = async (response) => {
 const api = async (endpoint, options = {}) => {
   const isFormData =
     typeof FormData !== "undefined" && options.body instanceof FormData;
+  const hasBody = options.body !== undefined && options.body !== null;
   let response;
   try {
     response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       credentials: "include",
       headers: {
-        ...(!isFormData ? { "Content-Type": "application/json" } : {}),
+        ...(!isFormData && hasBody
+          ? { "Content-Type": "application/json" }
+          : {}),
         ...(options.headers || {}),
       },
     });

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { listAnalyses, listApplications, listJobs, listResumes } from "@/lib/resources";
+import { listAnalysisSummary, listApplications, listJobs, listResumes } from "@/lib/resources";
 import { formatDate } from "@/lib/format";
 import { Alert, AppIcon, Card, EmptyState, PageHeader, StatusBadge } from "@/components/ui";
 import { useAuth } from "@/components/AuthProvider";
@@ -95,7 +95,7 @@ export default function DashboardPage() {
         listResumes({ page: 1, limit: 5 }),
         listJobs({ page: 1, limit: 5 }),
         listApplications({ page: 1, limit: 5 }),
-        listAnalyses(),
+        listAnalysisSummary(),
       ]);
 
       if (!active) {

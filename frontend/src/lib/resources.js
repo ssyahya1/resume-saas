@@ -15,6 +15,8 @@ const queryString = (params = {}) => {
   return serialized ? `?${serialized}` : "";
 };
 
+export const getWorkspaceOptions = () => api("/api/workspace/options");
+
 export const listResumes = ({ page = 1, limit = 10 } = {}) =>
   api(`/api/resume${queryString({ page, limit })}`);
 
@@ -106,6 +108,8 @@ export const deleteApplication = (id) =>
   });
 
 export const listAnalyses = () => api("/api/ai-analyses");
+
+export const listAnalysisSummary = () => api("/api/ai-analyses/summary");
 
 export const getAnalysis = (id) => api(`/api/ai-analyses/${id}`);
 

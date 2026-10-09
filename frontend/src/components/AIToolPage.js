@@ -7,9 +7,7 @@ import {
   getCoverLetterJob,
   getInterviewJob,
   getTailoringJob,
-  listApplications,
-  listJobs,
-  listResumes,
+  getWorkspaceOptions,
   listVersions,
   queueAnalysis,
   queueCoverLetter,
@@ -51,16 +49,6 @@ const TOOLS = {
   },
 };
 
-const extractLists = (results) => {
-  const errors = results.filter((result) => result.status === "rejected");
-  return {
-    applications: results[0].status === "fulfilled" && Array.isArray(results[0].value.applications) ? results[0].value.applications : [],
-    jobs: results[1].status === "fulfilled" && Array.isArray(results[1].value.jobs) ? results[1].value.jobs : [],
-    resumes: results[2].status === "fulfilled" && Array.isArray(results[2].value.resumes) ? results[2].value.resumes : [],
-    errors: errors.length,
-  };
-};
-
 export default function AIToolPage({ mode }) {
   const tool = TOOLS[mode];
   const aiLinks = [
@@ -84,54 +72,38 @@ export default function AIToolPage({ mode }) {
   const [job, setJob] = useState(null);
 
   const loadOptions = useCallback(async () => {
-    const results = await Promise.allSettled([
-      listApplications({ page: 1, limit: 100 }),
-      listJobs({ page: 1, limit: 100 }),
-      listResumes({ page: 1, limit: 100 }),
-    ]);
-    const lists = extractLists(results);
-    setApplications(lists.applications);
-    setJobs(lists.jobs);
-    setResumes(lists.resumes);
-    if (lists.errors === 3) {
-      setLoadingError("We couldn’t load your application, job, or resume options. Check your connection and try again.");
-    } else if (lists.errors) {
-      setLoadingError("Some selection options are unavailable. Refresh to load them before continuing.");
-    } else {
-      setLoadingError("");
+    try {
+      const options = await getWorkspaceOptions();
+      const availableApplications = Array.isArray(options.applications) ? options.applications : [];
+      const availableJobs = Array.isArray(options.jobs) ? options.jobs : [];
+      const availableResumes = Array.isArray(options.resumes) ? options.resumes : [];
+
+      setApplications(availableApplications);
+      setJobs(availableJobs);
+      setResumes(availableResumes);
+      setApplicationId((current) => availableApplications.some((item) => item.id === current) ? current : availableApplications[0]?.id || "");
+      setResumeId((current) => availableResumes.some((item) => item.id === current) ? current : availableResumes[0]?.id || "");
+      setJobId((current) => availableJobs.some((item) => item.id === current) ? current : availableJobs[0]?.id || "");
+      if (options.unavailable?.length === 3) {
+        setLoadingError("We couldn’t load your application, job, or resume options. Check your connection and try again.");
+      } else if (options.unavailable?.length) {
+        setLoadingError("Some selection options are unavailable. Refresh to load them before continuing.");
+      } else {
+        setLoadingError("");
+      }
+    } catch (error) {
+      setLoadingError(error.message || "Workspace options couldn’t be loaded. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    setApplicationId((current) => lists.applications.some((item) => item.id === current) ? current : lists.applications[0]?.id || "");
-    setResumeId((current) => lists.resumes.some((item) => item.id === current) ? current : lists.resumes[0]?.id || "");
-    setJobId((current) => lists.jobs.some((item) => item.id === current) ? current : lists.jobs[0]?.id || "");
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    let active = true;
     const load = async () => {
-      const results = await Promise.allSettled([
-        listApplications({ page: 1, limit: 100 }),
-        listJobs({ page: 1, limit: 100 }),
-        listResumes({ page: 1, limit: 100 }),
-      ]);
-      if (!active) return;
-      const lists = extractLists(results);
-      setApplications(lists.applications);
-      setJobs(lists.jobs);
-      setResumes(lists.resumes);
-      if (lists.errors === 3) {
-        setLoadingError("We couldn’t load your application, job, or resume options. Check your connection and try again.");
-      } else if (lists.errors) {
-        setLoadingError("Some selection options are unavailable. Refresh to load them before continuing.");
-      }
-      setApplicationId(lists.applications[0]?.id || "");
-      setResumeId(lists.resumes[0]?.id || "");
-      setJobId(lists.jobs[0]?.id || "");
-      setLoading(false);
+      await loadOptions();
     };
     load();
-    return () => { active = false; };
-  }, []);
+  }, [loadOptions]);
 
   useEffect(() => {
     if (mode !== "tailor" || !resumeId) return undefined;

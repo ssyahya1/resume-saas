@@ -36,4 +36,29 @@ describe("Validation Security", () => {
       "Validation failed"
     );
   });
+
+  it("caches allowed CORS preflight responses", async () => {
+    const response = await request(app)
+      .options("/api/health")
+      .set("Origin", "http://localhost:3000")
+      .set("Access-Control-Request-Method", "GET")
+      .set("Access-Control-Request-Headers", "content-type");
+
+    expect(response.status).toBe(204);
+    expect(response.headers["access-control-allow-origin"]).toBe(
+      "http://localhost:3000"
+    );
+    expect(response.headers["access-control-allow-credentials"]).toBe("true");
+    expect(response.headers["access-control-max-age"]).toBe("600");
+  });
+
+  it("continues to reject disallowed CORS origins", async () => {
+    const response = await request(app)
+      .options("/api/health")
+      .set("Origin", "https://not-allowed.example")
+      .set("Access-Control-Request-Method", "GET");
+
+    expect(response.status).toBe(403);
+    expect(response.headers["access-control-allow-origin"]).toBeUndefined();
+  });
 });

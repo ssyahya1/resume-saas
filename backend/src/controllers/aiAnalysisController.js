@@ -1,6 +1,7 @@
 import {
   queueAIAnalysis,
   getUserAIAnalyses,
+  getUserAIAnalysisSummary,
   getUserAIAnalysisById,
 } from "../services/aiAnalysisService.js";
 
@@ -46,6 +47,22 @@ export const getAIAnalyses = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       analyses,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAIAnalysisSummary = async (req, res, next) => {
+  try {
+    const summary = await getUserAIAnalysisSummary(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      analyses: summary.analyses,
+      pagination: {
+        total: summary.total,
+      },
     });
   } catch (error) {
     next(error);

@@ -3,6 +3,7 @@ import express from "express";
 import {
   createAIAnalysis,
   getAIAnalyses,
+  getAIAnalysisSummary,
   getAIAnalysis,
 } from "../controllers/aiAnalysisController.js";
 import { getAIAnalysisJob } from "../controllers/aiAnalysisController.js";
@@ -24,6 +25,7 @@ router.post(
 
 router.get("/", getAIAnalyses);
 router.get("/jobs/:jobId", getAIAnalysisJob);
+router.get("/summary", getAIAnalysisSummary);
 router.get("/:id", getAIAnalysis);
 
 
