@@ -1,333 +1,255 @@
 # Applyroom — AI Resume & Job Application SaaS
 
-Applyroom is a full-stack SaaS application that helps job seekers manage their resumes, job opportunities, applications, and AI-assisted application preparation in one place.
+Applyroom is a full-stack SaaS application that helps job seekers manage resumes, job opportunities, applications, and AI-assisted job preparation in one place.
 
-Instead of using separate tools for resume management, job tracking, cover letters, and interview preparation, Applyroom brings these workflows together into a single application.
+It combines resume management, job tracking, resume analysis, resume tailoring, cover letter generation, and interview preparation in a single platform.
 
-The project is built with a production-oriented backend architecture and a modern web frontend, with AI features processed asynchronously in the background.
-
----
+The application uses a production-oriented backend architecture with asynchronous AI processing, secure authentication, usage enforcement, automated testing, and cloud deployment.
 
 ## 🚀 Features
 
-### Authentication
-
-- User registration and login
-- Secure authentication using Supabase Auth
-- HttpOnly cookies for authentication sessions
-- Protected API routes
-- Forgot-password email flow
-- Server-side authorization
+### Authentication & Account Security
+- User registration and login using Supabase Auth.
+- HttpOnly cookie-based authentication.
+- Protected API routes and server-side authorization.
+- Forgot-password email flow.
+- Resource ownership checks and database-level security with Supabase Row Level Security (RLS).
 
 ### Resume Management
-
-- Create and manage resumes
-- Upload resume content
-- Edit resume information
-- Save resume versions
-- View previous versions
-- Rename and delete resumes
-- Structure uploaded resume content for AI processing
+- Create, upload, edit, rename, and delete resumes.
+- Manage resume versions and view previous versions.
+- Structure raw resume content into organized data for AI processing.
+- Store resume information for reuse across job applications.
 
 ### Job Management
-
-- Create and manage job opportunities
-- Store job descriptions
-- Edit job information
-- View individual jobs
-- Delete jobs
-- Start an application from a job
+- Create, view, update, and delete job opportunities.
+- Store job descriptions and relevant job information.
+- Associate jobs with resumes and applications.
 
 ### Application Management
+- Create and manage job applications.
+- Associate applications with jobs and resumes.
+- Track application statuses and application dates.
+- Filter and paginate application history.
 
-- Create job applications
-- Connect applications with jobs and resumes
-- Track application status
-- Record application dates
-- Edit application information
-- Delete applications
-- Filter and paginate application history
+### AI-Powered Tools
+- **Resume Analysis:** Evaluate resume content and its relevance to a job.
+- **Resume Structuring:** Convert raw resume text into structured information.
+- **Resume Tailoring:** Adapt resume content to a specific job description.
+- **Cover Letter Generation:** Generate job-specific cover letters.
+- **Interview Preparation:** Generate relevant interview questions.
 
-### AI Features
+### Real-Time AI Processing
+- Redis-backed background job queues using BullMQ.
+- Dedicated workers for AI operations.
+- WebSocket notifications for job updates.
+- Polling fallback when real-time updates are unavailable.
+- Retry handling and permanent failure handling.
+- Job status tracking and idempotency safeguards.
 
-Applyroom provides several AI-assisted features:
+## 🏗️ Architecture
 
-- Resume/job match analysis
-- Resume tailoring for specific jobs
-- AI-generated cover letters
-- Interview question generation
+Applyroom uses a layered backend architecture to separate HTTP handling, business logic, and database operations.
 
-AI operations are processed asynchronously using background jobs rather than keeping the user waiting for a long-running HTTP request.
-
-### Real-Time Processing
-
-- Background AI jobs using BullMQ
-- Redis-backed job queues
-- Worker processes for AI tasks
-- Job status tracking
-- WebSocket notifications
-- Polling fallback when real-time updates are unavailable
-- Retry handling for temporary failures
-- Permanent failure handling
-
----
-
-# 🏗️ Architecture
-
-Applyroom follows a layered backend architecture designed to keep responsibilities separated.
+### Request Processing
 
 ```text
-Frontend
-   │
-   ▼
-Next.js / React
-   │
-   │ HTTP + WebSocket
-   ▼
-Express API
-   │
-   ▼
-Routes
-   │
-   ▼
-Middleware
-   │
-   ▼
-Controllers
-   │
-   ▼
-Services
-   │
-   ▼
-Repositories
-   │
-   ▼
+Next.js Frontend
+       │
+       ▼
+   Express API
+       │
+       ▼
+     Routes
+       │
+       ▼
+   Middleware
+       │
+       ▼
+  Controllers
+       │
+       ▼
+    Services
+       │
+       ▼
+  Repositories
+       │
+       ▼
 Supabase PostgreSQL
 ```
 
-For asynchronous AI operations:
+### Asynchronous AI Processing
 
 ```text
-Frontend
-   │
-   ▼
-API
-   │
-   ▼
-AI Job Service
-   │
-   ▼
-BullMQ Queue
-   │
-   ▼
-Redis
-   │
-   ▼
-Worker
-   │
-   ▼
-Groq AI
-   │
-   ▼
-Database
-   │
-   ▼
-WebSocket Notification
-   │
-   ▼
-Frontend
+User starts an AI operation
+            │
+            ▼
+       Express API
+            │
+            ▼
+     AI Job Service
+            │
+            ▼
+       BullMQ Queue
+            │
+            ▼
+          Redis
+            │
+            ▼
+       Background Worker
+            │
+            ▼
+         Groq API
+            │
+            ▼
+   Parse and validate output
+            │
+            ▼
+     Save result to database
+            │
+            ▼
+   WebSocket / polling update
+            │
+            ▼
+       Frontend displays result
 ```
 
-This architecture keeps AI processing separate from normal request/response operations and allows long-running tasks to execute in the background.
+This design keeps long-running AI tasks separate from normal API requests and allows the frontend to track processing without holding a single HTTP request open.
 
----
+## 🛠️ Tech Stack
 
-# 🛠️ Tech Stack
-
-## Frontend
-
+### Frontend
 - Next.js
 - React
 - JavaScript
-- App Router
+- Next.js App Router
 - Tailwind CSS
 - Fetch API
 
-## Backend
-
+### Backend
 - Node.js
-- Express
-- JavaScript
-- Supabase
-- PostgreSQL
+- Express.js
+- JavaScript (ES modules)
+- Zod validation
+- Layered route, controller, service, and repository architecture
+
+### Database & Infrastructure
+- Supabase PostgreSQL
+- Supabase Auth
+- Supabase Row Level Security
 - Redis
 - BullMQ
 - WebSockets
-- Zod
 
-## AI
-
+### AI
 - Groq API
 - `openai/gpt-oss-120b`
+- Structured JSON output
+- Zod schema validation
 
-## Authentication
-
-- Supabase Auth
-- HttpOnly cookies
-
-## Testing & Development
-
-- Node.js
+### Testing & Delivery
+- Vitest and Supertest
 - GitHub Actions
-- Automated integration/security tests
 - ESLint
 - Next.js production builds
+- Git-connected Render and Vercel deployments
 
-## Deployment
+## 🔐 Authentication & Security
 
-- Frontend: Vercel
-- Backend: Render
-- Database/Auth: Supabase
-- Redis: production Redis service
+Security is implemented across authentication, API access, data ownership, and background processing.
 
----
-
-# 🔐 Authentication & Security
-
-Security was considered throughout the backend rather than treating authentication as only a login feature.
-
-### Authentication flow
+### Authentication Flow
 
 ```text
-User
- │
- ▼
-Login/Register
- │
- ▼
-Supabase Auth
- │
- ▼
+Register / Login
+       │
+       ▼
+  Supabase Auth
+       │
+       ▼
 Authenticated Session
- │
- ▼
-HttpOnly Cookie
- │
- ▼
-Protected API Requests
+       │
+       ▼
+ HttpOnly Cookie
+       │
+       ▼
+ Protected API Requests
 ```
 
-The frontend does not store authentication tokens in:
+The browser manages authentication cookies, and the frontend does not store authentication tokens in `localStorage` or `sessionStorage`.
 
-- `localStorage`
-- `sessionStorage`
+Additional security measures include:
 
-Authentication cookies are handled by the browser and sent with API requests using credentials.
+- Authentication and authorization middleware.
+- Zod-based request validation.
+- Credentialed CORS restricted to the configured frontend origin.
+- Origin validation for unsafe HTTP methods.
+- Secure cookie settings for the cross-origin production deployment.
+- General API rate limiting and IP-based authentication rate limiting.
+- Server-side Free/Pro plan enforcement and AI usage reservations.
+- Idempotency handling, including recovery of stale pending requests.
+- Resource ownership checks.
+- Security headers and sanitized structured logging.
+- Request IDs for troubleshooting.
+- Supabase RLS for user-owned database records.
+- Background-job ownership checks.
 
-The backend also includes:
+The backend uses trusted server-side Supabase credentials for repository operations. Client-provided plan information is not treated as authoritative.
 
-- Authentication middleware
-- Authorization checks
-- Input validation
-- General rate limiting and a separate IP-based authentication limit
-- Idempotency handling with stale pending-request recovery
-- Request IDs
-- Structured, sanitized logging
-- Security headers
-- Resource ownership checks
-- Background-job ownership authorization
-- Structured client, resource, conflict, and usage errors
-- Database-level protection through Supabase/RLS
+## 🤖 AI Processing
 
-Credentialed CORS is restricted to `FRONTEND_URL`. Unsafe HTTP methods must also include that exact Origin; safe methods are exempt. Authentication cookies are HttpOnly, and production cookies use Secure and SameSite=None for the cross-site Vercel/Render deployment.
+AI operations are submitted to background queues rather than being handled entirely inside long-running synchronous API requests.
 
-The general API limiter allows 10 requests per user in 5 minutes. Authentication endpoints have a separate limit of 10 requests per IP in 15 minutes. Plan enforcement and usage reservations are handled server-side; client-supplied plan values are not authoritative.
+The processing flow is:
 
-Liveness is available at `GET /api/health` (also `/api/health/live`) and does not depend on external services. `GET /api/health/ready` checks Supabase and Redis and returns HTTP 503 when either critical dependency is unavailable.
+1. The user starts an AI feature.
+2. The API validates the request and checks authorization and usage limits.
+3. The application creates or queues the background job.
+4. A worker sends the required context to the Groq API.
+5. The generated output is parsed and validated against the relevant schema.
+6. The application saves the result.
+7. The frontend receives status updates through WebSockets or polling.
 
----
+The application uses Groq's OpenAI-compatible API with structured-output handling. AI-generated data is validated before it is used by downstream application logic.
 
-# 🤖 AI Processing
+AI output can still be invalid or incomplete, so parsing, validation, and failure handling remain important parts of the workflow.
 
-AI features are not handled as large synchronous API requests.
+## ⚡ Background Jobs
 
-When a user starts an AI operation, Applyroom creates a background job.
+Redis and BullMQ support asynchronous processing for the main AI features.
 
-```text
-User starts AI feature
-        │
-        ▼
-API creates job
-        │
-        ▼
-BullMQ Queue
-        │
-        ▼
-Worker processes job
-        │
-        ▼
-Groq AI
-        │
-        ▼
-JSON parsing and Zod validation
-        │
-        ▼
-Store result
-        │
-        ▼
-Notify user
-```
+The background-processing system includes:
 
-This approach allows the application to handle longer AI operations without blocking the API request.
+- Separate processing flows for AI operations.
+- Queue-based job execution.
+- Worker-level error handling.
+- Retry and permanent-failure handling.
+- Job status tracking.
+- WebSocket notifications.
+- Polling fallback.
+- Idempotency safeguards.
+- Queue cleanup and ownership checks.
 
-The frontend can receive progress/completion information through WebSockets and can fall back to polling when necessary.
+These mechanisms improve responsiveness and provide a structured way to manage AI operations that may take longer than a normal API request.
 
-Groq is used through its OpenAI-compatible API with JSON response mode for structured-output operations. Generated JSON is parsed and validated against existing Zod schemas before downstream application logic uses it.
+## 🗄️ Database
 
----
+Supabase PostgreSQL stores the application's persistent data, including:
 
-# ⚡ Background Jobs
+- User profiles and plan information.
+- Resumes and resume versions.
+- Jobs and job descriptions.
+- Job applications.
+- AI job records and results.
+- AI usage tracking.
 
-BullMQ and Redis are used for asynchronous processing.
+Supabase Auth handles user authentication, while backend authorization and RLS help protect user-owned resources.
 
-The project contains separate processing flows for the major AI features, allowing them to run outside the main HTTP request lifecycle.
+AI usage is enforced server-side so that plan limits cannot be bypassed simply by changing frontend requests.
 
-Background processing also supports:
+## 🔄 API Architecture
 
-- Retries
-- Failure handling
-- Job status tracking
-- Ownership checks
-- Idempotency
-- Queue cleanup
-- Worker processing
-
----
-
-# 🗄️ Database
-
-The application uses Supabase PostgreSQL.
-
-The database stores information such as:
-
-- User profiles
-- Resumes
-- Resume versions
-- Jobs
-- Applications
-- AI job records
-- AI results
-- Usage information
-
-Supabase Row Level Security is used where appropriate to protect user-owned data.
-
-The backend uses privileged Supabase credentials for trusted repository operations and obtains each user's plan from their profile before reserving feature usage.
-
----
-
-# 🔄 API Architecture
-
-The backend follows:
+The backend follows a layered architecture:
 
 ```text
 Route
@@ -343,44 +265,23 @@ Repository
 Database
 ```
 
-### Routes
+- **Routes:** Define endpoints and attach the required middleware.
+- **Middleware:** Handle authentication, validation, rate limiting, and request-level security.
+- **Controllers:** Translate HTTP requests into service calls and format responses.
+- **Services:** Implement business rules and coordinate application workflows.
+- **Repositories:** Encapsulate database queries and persistence operations.
 
-Routes are responsible for defining API endpoints and applying the required middleware.
+This separation makes the codebase easier to understand, test, debug, and extend.
 
-### Middleware
+## 📁 Project Structure
 
-Middleware handles concerns such as:
-
-- Authentication
-- Validation
-- Rate limiting
-- Request processing
-- Security
-
-### Controllers
-
-Controllers handle HTTP-specific responsibilities:
-
-- Reading request data
-- Calling services
-- Returning responses
-
-### Services
-
-Services contain application/business logic.
-
-### Repositories
-
-Repositories handle database interaction and keep database operations separated from business logic.
-
----
-
-# 📁 Project Structure
-
-A simplified structure of the project:
+Simplified repository structure:
 
 ```text
 saas/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 │
 ├── backend/
 │   ├── src/
@@ -394,6 +295,7 @@ saas/
 │   │   └── ...
 │   │
 │   ├── tests/
+│   ├── package.json
 │   └── ...
 │
 ├── frontend/
@@ -403,351 +305,271 @@ saas/
 │   │   ├── lib/
 │   │   └── ...
 │   │
+│   ├── package.json
 │   └── ...
 │
 └── README.md
 ```
 
----
+## 🌐 Production Deployment
 
-# 🌐 Production
+- **Frontend:** [Applyroom on Vercel](https://applyroom.vercel.app)
+- **Backend:** [Applyroom API on Render](https://resume-saas-bam9.onrender.com)
+- **Database and authentication:** Supabase
+- **Background job infrastructure:** Redis and BullMQ
 
-### Backend
+### Health Checks
 
-```text
-https://resume-saas-bam9.onrender.com
-```
+The backend exposes health endpoints:
 
-### Frontend
+- `GET /api/health` — Liveness check.
+- `GET /api/health/live` — Liveness alias, if enabled in the deployed version.
+- `GET /api/health/ready` — Readiness check for critical dependencies such as Supabase and Redis.
 
-The frontend is configured for deployment through Vercel.
+The readiness endpoint can return HTTP 503 if a required dependency is unavailable.
 
-The production frontend communicates with the deployed backend through:
+## 💻 Local Development
 
-```env
-NEXT_PUBLIC_API_URL=https://resume-saas-bam9.onrender.com
-```
+### Prerequisites
 
----
+Install or configure:
 
-# 💻 Local Development
+- Node.js and npm.
+- A Supabase project.
+- Redis.
+- A Groq API key.
 
-## Prerequisites
+### 1. Configure the Backend
 
-Make sure you have:
+Open a terminal and navigate to the backend directory:
 
-- Node.js
-- npm
-- Supabase project
-- Redis
-- Groq API key
-
----
-
-## Backend Setup
-
-Navigate to the backend:
-
-```bash
+```powershell
 cd F:\saas\backend
-```
-
-Install dependencies:
-
-```bash
 npm install
 ```
 
-Create your environment file:
+Copy `.env.example` to `.env` and configure the required environment variables:
 
-```text
-.env
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
+SUPABASE_SECRET_KEY=your-supabase-secret-key
+GROQ_API_KEY=your-groq-api-key
+FRONTEND_URL=http://localhost:3000
+NODE_ENV=development
+PORT=5000
+REDIS_URL=redis://localhost:6379
 ```
 
-Copy `.env.example` to `.env` and set the Supabase URL, publishable key, secret key, Groq API key, and frontend origin.
+Use your actual Supabase credentials and Groq API key. Keep `.env` out of version control and never publish secrets.
 
-Configure `REDIS_URL` when using Redis other than the local default.
-
-Keep `.env` files and credentials out of version control.
-
-Then start the API:
+Start the backend:
 
 ```bash
 npm run dev
 ```
 
-The backend runs locally on:
+The local API runs at `http://localhost:5000`.
 
-```text
-http://localhost:5000
-```
+Ensure Redis is running and reachable at the configured `REDIS_URL`.
 
----
+### 2. Configure the Frontend
 
-## Frontend Setup
+Open another terminal:
 
-Navigate to the frontend:
-
-```bash
+```powershell
 cd F:\saas\frontend
-```
-
-Install dependencies:
-
-```bash
 npm install
 ```
 
-Create:
-
-```text
-.env.local
-```
-
-Add:
+Create `.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000
 ```
 
-Start the development server:
+Start the frontend:
 
 ```bash
 npm run dev
 ```
 
-The frontend runs locally on:
+The frontend runs at `http://localhost:3000`.
 
-```text
-http://localhost:3000
-```
+## 🧪 Testing
 
----
+### Backend
 
-# 🧪 Testing
+The backend includes automated tests covering areas such as:
 
-The backend includes automated tests covering important application and security behavior.
+- API behavior and integration.
+- Authentication and authorization.
+- Validation and security behavior.
+- AI service and background-job behavior.
+- Queue and worker-related functionality.
 
-The current backend test suite contains:
-
-- Integration tests
-- Authentication tests
-- API behavior tests
-- Security-related tests
-- AI job behavior
-- Queue/worker-related functionality
-
-Run the backend tests with:
+Run the backend tests from `F:\saas\backend`:
 
 ```bash
 npm test
 ```
 
-For the frontend:
+### Frontend
+
+Run linting:
 
 ```bash
 npm run lint
 ```
 
-Build the production frontend:
+Create a production build:
 
 ```bash
 npm run build
 ```
 
----
+Run these frontend commands from `F:\saas\frontend`.
 
-# 🔁 CI/CD
+## 🔁 CI/CD
 
-The backend uses GitHub Actions for automated verification.
+Applyroom uses GitHub Actions for automated backend verification and Git-connected deployments for the frontend and backend.
 
-The CI pipeline performs tasks such as:
-
-```text
-Push / Pull Request
-        │
-        ▼
-GitHub Actions
-        │
-        ├── Install dependencies
-        ├── Start required services
-        ├── Run tests
-        └── Verify application
-```
-
-The goal is to prevent broken changes from reaching the deployment stage.
-
-Frontend CI/CD and the final production deployment workflow are being finalized alongside the frontend.
-
----
-
-# 🎨 Design
-
-Applyroom uses a **Burgundy + Travertine + White** visual system.
-
-The design aims for a professional SaaS appearance rather than a typical developer dashboard.
-
-Primary colors include:
+### Continuous Integration
 
 ```text
-Burgundy        #6B1F2B
-Dark Burgundy   #4A151E
-Burgundy Hover  #7D2937
-
-Travertine      #E8DFD0
-Light Travertine
-                #F5F1E9
-
-Background      #FAF8F4
-Surface         #FFFFFF
-
-Text            #241F1D
-Muted           #756D66
-Border          #DED5C8
+Push / Pull Request to main
+           │
+           ▼
+     GitHub Actions
+           │
+           ▼
+    Install dependencies
+           │
+           ▼
+   Start required services
+           │
+           ▼
+      Run backend tests
+           │
+           ▼
+    Report CI result
 ```
 
-The interface intentionally uses Burgundy as an accent rather than covering the entire application in a single strong color.
+The workflow runs on pushes and pull requests targeting `main`. It installs backend dependencies, starts the required Redis service, and runs the automated backend test suite.
 
----
+### Continuous Deployment
 
-# 📌 Current Project Status
+```text
+Changes pushed to main
+           │
+           ├───────────────┐
+           ▼               ▼
+      Render deploy    Vercel deploy
+           │               │
+           ▼               ▼
+       Backend API      Frontend
+```
 
-Applyroom has moved beyond the initial prototype stage.
+Render and Vercel are connected to the GitHub repository and configured to deploy their respective applications from the `main` branch. GitHub Actions provides automated verification; deployment is handled by the hosting platforms.
+
+## 🎨 Design System
+
+Applyroom uses a **Burgundy + Travertine + White** visual system designed to create a professional SaaS experience.
+
+| Color | Hex |
+|---|---|
+| Burgundy | `#6B1F2B` |
+| Dark Burgundy | `#4A151E` |
+| Burgundy Hover | `#7D2937` |
+| Travertine | `#E8DFD0` |
+| Light Travertine | `#F5F1E9` |
+| Background | `#FAF8F4` |
+| Surface | `#FFFFFF` |
+| Text | `#241F1D` |
+| Muted | `#756D66` |
+| Border | `#DED5C8` |
+
+Burgundy is used primarily as an accent, with light neutral surfaces and restrained contrast to keep the interface readable.
+
+## 📌 Project Status
+
+Applyroom's core user-facing functionality and production infrastructure are implemented.
 
 ### Backend
-
-- Authentication implemented
-- Resume management implemented
-- Job management implemented
-- Application management implemented
-- AI processing implemented
-- Redis/BullMQ background processing implemented
-- WebSocket notifications implemented
-- Rate limiting implemented
-- Validation implemented
-- Idempotency implemented
-- Automated testing implemented
-- CI implemented
-- Production deployment implemented
+- [x] Authentication and protected routes.
+- [x] Resume, job, and application management.
+- [x] AI resume analysis and structuring.
+- [x] Resume tailoring, cover letters, and interview questions.
+- [x] Redis/BullMQ background processing.
+- [x] WebSocket updates and polling fallback.
+- [x] Usage enforcement and rate limiting.
+- [x] Validation, idempotency, and error handling.
+- [x] Automated backend tests and CI.
+- [x] Production deployment and health checks.
 
 ### Frontend
+- [x] Landing and authentication pages.
+- [x] Dashboard and core application workflows.
+- [x] Resume, job, and application management.
+- [x] AI tools and processing states.
+- [x] Responsive interface and design system.
 
-- Landing page
-- Authentication pages
-- Dashboard
-- Resume management
-- Job management
-- Application management
-- AI tools
-- Responsive UI
-- Loading/error/empty states
-- Delete confirmation dialogs
-- Password visibility controls
-- Burgundy/Travertine design system
+The application is deployed, and the core workflows have been tested. Further end-to-end checks and ongoing maintenance remain useful as the project evolves.
 
-The frontend is currently undergoing final end-to-end testing and product polish.
+## 🛣️ Future Enhancements
 
----
+Potential additions include:
 
-# 🛣️ Roadmap
+- [ ] Stripe subscriptions and payment webhooks.
+- [ ] Automated subscription lifecycle management.
+- [ ] Additional monitoring and alerting.
+- [ ] Docker-based development and deployment.
+- [ ] Expanded end-to-end testing.
+- [ ] Additional AI output quality checks.
+- [ ] Further UI/UX improvements.
 
-### Current
+These are optional extensions rather than prerequisites for the current core application.
 
-- [x] Backend architecture
-- [x] Authentication
-- [x] Resume management
-- [x] Job management
-- [x] Application management
-- [x] AI processing
-- [x] Redis/BullMQ
-- [x] WebSockets
-- [x] Automated tests
-- [x] Backend CI
-- [x] Backend deployment
-- [x] Main frontend functionality
-- [x] Product redesign
-- [ ] Complete frontend end-to-end QA
-- [x] Backend production hardening
-- [ ] Final CI/CD verification
-
-### Later
-
-- [ ] Stripe subscriptions
-- [ ] Subscription-based plan management
-- [ ] Payment webhooks
-- [ ] Additional production monitoring
-- [ ] Docker-based development/deployment workflow
-- [ ] Additional integration testing
-- [ ] Further AI improvements
-
----
-
-# ⚖️ Trade-offs
-
-Applyroom was designed around learning and applying production backend concepts through a real SaaS application.
-
-Some deliberate decisions include:
+## ⚖️ Engineering Trade-offs
 
 ### Supabase Auth
 
-Using Supabase Auth avoids building password authentication and session management completely from scratch while still allowing the application to control its own authorization and database logic.
+Supabase Auth provides established authentication functionality while allowing the application to implement its own authorization rules and data-access logic.
 
 ### Background AI Jobs
 
-AI requests can take longer than normal API requests, so BullMQ and Redis are used instead of keeping users waiting on a synchronous HTTP request.
+AI operations can take longer than normal API requests. BullMQ and Redis let the application process these tasks asynchronously and communicate status updates to users.
 
-### WebSockets + Polling
+### WebSockets and Polling
 
-WebSockets provide a better real-time experience, while polling provides a fallback when a real-time connection is unavailable.
+WebSockets provide timely updates during AI processing, while polling provides a fallback if the real-time connection is unavailable.
 
 ### Layered Backend
 
-The Route → Middleware → Controller → Service → Repository architecture adds some structure and files, but makes business logic, HTTP concerns, and database access easier to separate and maintain.
+The route/controller/service/repository separation introduces some additional structure but keeps HTTP handling, business logic, and persistence responsibilities distinct.
 
-### PostgreSQL + Supabase
+### Managed Infrastructure
 
-Supabase provides PostgreSQL, authentication, and database security features without requiring the entire infrastructure to be built and maintained manually.
+Supabase, Render, Vercel, and a Redis service reduce the amount of infrastructure that must be operated manually while still allowing the application to use production-oriented backend patterns.
 
----
+## 🎯 Project Goal
 
-# 🎯 Project Goal
+Applyroom was built as a practical full-stack SaaS project focused on applying real software engineering concepts:
 
-Applyroom is being developed as a practical production-oriented SaaS project rather than a simple CRUD demonstration.
+- Authentication and authorization.
+- REST API design.
+- PostgreSQL data modeling.
+- AI integration and structured output validation.
+- Background jobs and queues.
+- Real-time communication.
+- Rate limiting and idempotency.
+- Automated testing and CI/CD.
+- Cloud deployment and operational health checks.
 
-The goal is to understand how the different parts of a real application work together:
+The project demonstrates how these components can work together in a single application rather than as isolated technical exercises.
 
-```text
-Authentication
-      +
-Authorization
-      +
-Database
-      +
-API Design
-      +
-AI
-      +
-Redis
-      +
-Background Jobs
-      +
-WebSockets
-      +
-Validation
-      +
-Security
-      +
-Testing
-      +
-CI/CD
-      ↓
-A complete SaaS application
-```
-
----
-
-# 👨‍💻 Project
+## 👨‍💻 Project
 
 **Applyroom — AI Resume & Job Application SaaS**
 
-Built as a full-stack project focused on practical software engineering, backend architecture, AI integration, and production-oriented development.
+A full-stack project focused on practical software engineering, secure backend architecture, asynchronous AI integration, and production-oriented development.
